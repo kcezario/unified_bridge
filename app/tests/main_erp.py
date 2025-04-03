@@ -1,9 +1,9 @@
 import os
 from dotenv import load_dotenv
 
-from core.client_factory import ClientFactory
+from app.core.client_factory import ClientFactory
 
-load_dotenv()  # Carrega o .env para os testes locais
+load_dotenv()
 
 def test_create_erp():
     erp_client = ClientFactory.get_erp_client()
@@ -21,7 +21,8 @@ def test_create_erp():
         "codigo_categoria": "1.01.02",
         "id_conta_corrente": 7890,
         "observacao": "Teste de criação de contas a receber",
-        "data_previsao": "2025-04-10"
+        "data_previsao": "2025-04-10",
+        "token": token
     }
 
     # Cria
@@ -32,7 +33,7 @@ def test_create_erp():
     lancamento_id = (
         result.get("codigo_lancamento_omie") or
         result.get("codigo_lancamento_integracao") or
-        "mock-ar-1"
+        result.get("accounts_receivable_id")
     )
 
     # Atualiza
