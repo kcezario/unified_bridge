@@ -9,7 +9,7 @@ logger = get_logger(__name__)
 class ERPClientMock(ERPClientInterface):
     def __init__(self):
         self._token = None
-        self._receivables = {}  # simula uma "tabela" na memória
+        self._receivables = {} 
 
     def get_config(self) -> Dict[str, Any]:
         logger.debug("MockERP: carregando configurações do ambiente.")
