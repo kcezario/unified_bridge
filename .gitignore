@@ -93,3 +93,6 @@ dmypy.json
 
 # profiling data
 .prof
+
+# logs
+logs/

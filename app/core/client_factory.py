@@ -1,17 +1,17 @@
 import os
-from erp.erp_client_interface import ERPClientInterface
-from invoice.invoice_client_interface import InvoiceClientInterface
-from payment.payment_client_interface import PaymentClientInterface
+from app.erp.erp_client_interface import ERPClientInterface
+from app.invoice.invoice_client_interface import InvoiceClientInterface
+from app.payment.payment_client_interface import PaymentClientInterface
 
 # Mocks
-from erp.erp_mock_client import ERPClientMock
-from invoice.invoice_mock_client import InvoiceClientMock
-from payment.payment_mock_client import PaymentClientMock
+from app.erp.erp_mock_client import ERPClientMock
+from app.invoice.invoice_mock_client import InvoiceClientMock
+from app.payment.payment_mock_client import PaymentClientMock
 
 # Futuras implementações reais (ex: Omie)
-# from erp.omie_erp_client import OmieERPClient
-# from invoice.nfeio_client import NFeIOClient
-# from payment.asaas_client import AsaasClient
+# from app.erp.omie_erp_client import OmieERPClient
+# from app.invoice.nfeio_client import NFeIOClient
+# from app.payment.asaas_client import AsaasClient
 
 
 class ClientFactory:

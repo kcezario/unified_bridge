@@ -1,7 +1,7 @@
 import os
 from typing import Any, Dict
-from payment.payment_client_interface import PaymentClientInterface
-from utils.logger import get_logger
+from app.payment.payment_client_interface import PaymentClientInterface
+from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

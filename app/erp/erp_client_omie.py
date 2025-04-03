@@ -2,9 +2,9 @@ import os
 import requests
 from typing import Any, Dict
 
-from erp.erp_client_interface import ERPClientInterface
-from schemas.accounts_receivable import AccountsReceivableOmieModel
-from utils.logger import get_logger
+from app.erp.erp_client_interface import ERPClientInterface
+from app.schemas.accounts_receivable import AccountsReceivableOmieModel
+from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

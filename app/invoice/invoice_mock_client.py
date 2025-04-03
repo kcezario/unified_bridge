@@ -1,7 +1,7 @@
 import os
 from typing import Any, Dict
-from invoice.invoice_client_interface import InvoiceClientInterface
-from utils.logger import get_logger
+from app.invoice.invoice_client_interface import InvoiceClientInterface
+from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
