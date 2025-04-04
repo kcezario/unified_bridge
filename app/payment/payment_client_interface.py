@@ -4,16 +4,6 @@ from typing import Any, Dict
 
 class PaymentClientInterface(ABC):
     @abstractmethod
-    def get_config(self) -> Dict[str, Any]:
-        """Carrega as configurações a partir das variáveis de ambiente."""
-        pass
-
-    @abstractmethod
-    def get_access_token(self) -> str:
-        """Recupera o token de acesso para o sistema de pagamentos."""
-        pass
-
-    @abstractmethod
     def create_payment(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Gera um novo pagamento (ex: boleto, pix, cartão)."""
         pass

@@ -11,7 +11,7 @@ class ERPClientMock(ERPClientInterface):
         self._token = None
         self._receivables = {}
 
-    def get_config(self) -> Dict[str, Any]:
+    def _get_config(self) -> Dict[str, Any]:
         logger.debug("MockERP: carregando configurações do ambiente.")
         config = {
             "app_key": os.getenv("MOCK_ERP_APP_KEY"),
@@ -26,7 +26,7 @@ class ERPClientMock(ERPClientInterface):
 
     def get_access_token(self) -> str:
         if self._token is None:
-            config = self.get_config()
+            config = self._get_config()
             self._token = f"mock-token-{config['app_key'][-4:]}"
             logger.info(f"MockERP: token gerado com sucesso: {self._token}")
         return self._token
