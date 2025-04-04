@@ -11,6 +11,26 @@ logger = get_logger(__name__)
 
 
 class ERPClientOmie(ERPClientInterface):
+    """
+    Cliente responsável por integração com a API do Omie (Contas a Receber).
+
+    Esta classe encapsula os principais métodos para comunicação com a API REST da Omie
+    relacionados à gestão de contas a receber. Permite criar, atualizar e dar baixa
+    em lançamentos financeiros.
+
+    Requisitos:
+        - Variáveis de ambiente:
+            - OMIE_APP_KEY
+            - OMIE_APP_SECRET
+            - OMIE_BASE_URL
+            - OMIE_DEFAULT_ACCOUNT_ID (opcional para baixa)
+
+    Métodos principais:
+        - create_accounts_receivable()
+        - update_accounts_receivable()
+        - settle_accounts_receivable()
+    """
+    
     def __init__(self):
         config = self._get_config()
         self.base_url = config["base_url"]
@@ -33,6 +53,33 @@ class ERPClientOmie(ERPClientInterface):
 
         return config
     
+    def _build_payload(self, call: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        logger.debug(f"Omie: construindo payload para chamada {call}.")
+        return {
+            "call": call,
+            "app_key": self.app_key,
+            "app_secret": self.app_secret,
+            "param": [data]
+        }
+
+    def _post_to_omie(self, path: str, payload: Dict[str, Any]) -> requests.Response:
+        url = f"{self.base_url}{path}"
+        logger.debug(f"Omie: POST para {url} com payload: {payload}")
+        return requests.post(url, json=payload)
+
+    def _handle_response(self, response: requests.Response) -> Dict[str, Any]:
+        if response.status_code != 200:
+            logger.error(f"Omie: erro HTTP {response.status_code} - {response.text}")
+            response.raise_for_status()
+
+        result = response.json()
+        if "faultstring" in result:
+            logger.error(f"Omie: erro lógico da API: {result['faultstring']}")
+            raise ValueError(result["faultstring"])
+
+        logger.info(f"Omie: operação concluída com sucesso. Resposta: {result}")
+        return result
+
     def create_accounts_receivable(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Cria um novo lançamento no Contas a Receber da Omie.
@@ -65,33 +112,6 @@ class ERPClientOmie(ERPClientInterface):
         payload = self._build_payload("IncluirContaReceber", data)
         response = self._post_to_omie("financas/contareceber/", payload)
         return self._handle_response(response)
-    
-    def _build_payload(self, call: str, data: Dict[str, Any]) -> Dict[str, Any]:
-        logger.debug(f"Omie: construindo payload para chamada {call}.")
-        return {
-            "call": call,
-            "app_key": self.app_key,
-            "app_secret": self.app_secret,
-            "param": [data]
-        }
-
-    def _post_to_omie(self, path: str, payload: Dict[str, Any]) -> requests.Response:
-        url = f"{self.base_url}{path}"
-        logger.debug(f"Omie: POST para {url} com payload: {payload}")
-        return requests.post(url, json=payload)
-
-    def _handle_response(self, response: requests.Response) -> Dict[str, Any]:
-        if response.status_code != 200:
-            logger.error(f"Omie: erro HTTP {response.status_code} - {response.text}")
-            response.raise_for_status()
-
-        result = response.json()
-        if "faultstring" in result:
-            logger.error(f"Omie: erro lógico da API: {result['faultstring']}")
-            raise ValueError(result["faultstring"])
-
-        logger.info(f"Omie: operação concluída com sucesso. Resposta: {result}")
-        return result
 
     def update_accounts_receivable(self, id: str, data: Dict[str, Any]) -> Dict[str, Any]:
         """
