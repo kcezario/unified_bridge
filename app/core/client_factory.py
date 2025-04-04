@@ -4,12 +4,12 @@ from app.invoice.invoice_client_interface import InvoiceClientInterface
 from app.payment.payment_client_interface import PaymentClientInterface
 
 # Mocks
-from app.erp.erp_mock_client import ERPClientMock
-from app.invoice.invoice_mock_client import InvoiceClientMock
-from app.payment.payment_mock_client import PaymentClientMock
+from app.erp.erp_client_mock import ERPClientMock
+from app.invoice.invoice_client_mock import InvoiceClientMock
+from app.payment.payment_client_mock import PaymentClientMock
 
 # Futuras implementações reais (ex: Omie)
-# from app.erp.omie_erp_client import OmieERPClient
+from app.erp.erp_client_omie import ERPClientOmie
 # from app.invoice.nfeio_client import NFeIOClient
 # from app.payment.asaas_client import AsaasClient
 
@@ -20,8 +20,8 @@ class ClientFactory:
         client_type = os.getenv("ERP_CLIENT", "mock").lower()
         if client_type == "mock":
             return ERPClientMock()
-        # elif client_type == "omie":
-        #     return OmieERPClient()
+        elif client_type == "omie":
+            return ERPClientOmie()
         else:
             raise ValueError(f"ERP client '{client_type}' is not supported.")
 
