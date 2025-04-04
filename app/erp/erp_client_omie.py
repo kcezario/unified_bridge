@@ -1,5 +1,7 @@
 import os
+import json
 import requests
+
 from typing import Any, Dict
 
 from app.erp.erp_client_interface import ERPClientInterface
@@ -14,13 +16,15 @@ class ERPClientOmie(ERPClientInterface):
         self.base_url = config["base_url"]
         self.app_key = config["app_key"]
         self.app_secret = config["app_secret"]
+        self.default_account_id = config["default_account_id"]
 
     def _get_config(self) -> Dict[str, Any]:
         logger.debug("Omie: carregando configurações do ambiente.")
         config = {
             "app_key": os.getenv("OMIE_APP_KEY"),
             "app_secret": os.getenv("OMIE_APP_SECRET"),
-            "base_url": os.getenv("OMIE_BASE_URL", "https://app.omie.com.br/api/v1/")
+            "base_url": os.getenv("OMIE_BASE_URL"),
+            "default_account_id": os.getenv("OMIE_DEFAULT_ACCOUNT_ID")
         }
 
         if not config["app_key"] or not config["app_secret"]:
@@ -30,18 +34,45 @@ class ERPClientOmie(ERPClientInterface):
         return config
     
     def create_accounts_receivable(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Cria um novo lançamento no Contas a Receber da Omie.
+
+        Args:
+            data (Dict[str, Any]): Dados do lançamento, incluindo:
+                - codigo_lancamento_integracao (str): Identificador único gerado pelo integrador.
+                - codigo_cliente_fornecedor (int/str): Código do cliente ou fornecedor cadastrado no Omie.
+                - data_vencimento (str): Data de vencimento no formato "dd/mm/aaaa".
+                - valor_documento (float/str): Valor do título.
+                - codigo_categoria (str): Código da categoria financeira.
+                - data_previsao (str): Data prevista de pagamento/recebimento.
+                - id_conta_corrente (int/str): ID da conta corrente a ser associada.
+                - observacao (str): Campo opcional para observações.
+
+        Returns:
+            Dict[str, Any]: Resposta da API contendo os códigos do lançamento ou erro.
+        """
+        
         logger.debug("Omie: criando conta a receber com os dados fornecidos.")
-        payload = self._build_payload("IncluirContaReceber", "conta_receber_cadastro", data)
+        logger.debug(f"Omie: dados recebidos:\n{json.dumps(data, indent=2, ensure_ascii=False)}")
+        for field in [
+            "codigo_cliente_fornecedor",
+            "valor_documento",
+            "id_conta_corrente"
+        ]:
+            if field in data:
+                data[field] = str(data[field])
+
+        payload = self._build_payload("IncluirContaReceber", data)
         response = self._post_to_omie("financas/contareceber/", payload)
         return self._handle_response(response)
     
-    def _build_payload(self, call: str, wrapper_key: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    def _build_payload(self, call: str, data: Dict[str, Any]) -> Dict[str, Any]:
         logger.debug(f"Omie: construindo payload para chamada {call}.")
         return {
             "call": call,
             "app_key": self.app_key,
             "app_secret": self.app_secret,
-            "param": [{wrapper_key: data}]
+            "param": [data]
         }
 
     def _post_to_omie(self, path: str, payload: Dict[str, Any]) -> requests.Response:
@@ -63,6 +94,18 @@ class ERPClientOmie(ERPClientInterface):
         return result
 
     def update_accounts_receivable(self, id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Atualiza um lançamento existente no Contas a Receber.
+
+        Args:
+            id (str): Código do lançamento (`codigo_lancamento_omie`) a ser atualizado.
+            data (Dict[str, Any]): Campos a serem atualizados. Exemplo:
+                - observacao (str): Nova observação para o título.
+
+        Returns:
+            Dict[str, Any]: Resposta da API com a confirmação da atualização.
+        """
+        
         logger.debug(f"Omie: iniciando atualização da conta a receber {id}.")
 
         data_with_id = {
@@ -72,7 +115,6 @@ class ERPClientOmie(ERPClientInterface):
 
         payload = self._build_payload(
             call="AlterarContaReceber",
-            wrapper_key="conta_receber_cadastro",
             data=data_with_id
         )
 
@@ -80,17 +122,38 @@ class ERPClientOmie(ERPClientInterface):
         return self._handle_response(response)
 
 
-    def settle_accounts_receivable(self, id: str) -> Dict[str, Any]:
+    def settle_accounts_receivable(
+        self,
+        id: str,
+        valor: str,
+        conta_corrente_id: str,
+        data: str
+    ) -> Dict[str, Any]:
+        
+        """
+        Realiza a baixa de um título em aberto no Contas a Receber da Omie.
+
+        Args:
+            id (str): Código do lançamento (`codigo_lancamento`) a ser baixado.
+            account_id (str, optional): ID da conta corrente. Caso não informado, será usada a conta padrão definida no ambiente.
+
+        Returns:
+            Dict[str, Any]: Resposta da API com os dados da baixa, incluindo valor baixado e status de liquidação.
+        """
+    
         logger.debug(f"Omie: iniciando baixa da conta a receber {id}.")
 
-        data = {
-            "codigo_lancamento_omie": int(id)
+        payload_data = {
+            "codigo_lancamento": int(id),
+            "codigo_conta_corrente": conta_corrente_id,
+            "valor": valor,
+            "data": data,
+            "observacao": "Baixa automática via API"
         }
 
         payload = self._build_payload(
-            call="BaixarContaReceber",
-            wrapper_key="conta_receber_cadastro",
-            data=data
+            call="LancarRecebimento",
+            data=payload_data
         )
 
         response = self._post_to_omie("financas/contareceber/", payload)
