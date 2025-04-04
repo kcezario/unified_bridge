@@ -24,23 +24,20 @@ class ERPClientMock(ERPClientInterface):
 
         return config
 
-    def get_access_token(self) -> str:
+    def _ensure_token(self):
         if self._token is None:
             config = self._get_config()
             self._token = f"mock-token-{config['app_key'][-4:]}"
-            logger.info(f"MockERP: token gerado com sucesso: {self._token}")
-        return self._token
+            logger.info(f"MockERP: token gerado automaticamente: {self._token}")
 
-    def _validate_token(self, token: str):
-        logger.debug(f"MockERP: token recebido: {token}")
-        logger.debug(f"MockERP: token armazenado: {self._token}")
-        if token != self._token:
-            logger.error("MockERP: token inválido ou ausente.")
-            raise ValueError("Token inválido.")
+    def _validate_token(self):
+        self._ensure_token()
+        logger.debug(f"MockERP: validando token interno: {self._token}")
+        # Simula lógica real — aqui sempre será válido se gerado
 
     def create_accounts_receivable(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        token = data.pop("token", None)
-        self._validate_token(token)
+        logger.debug("MockERP: iniciando criação de conta a receber.")
+        self._validate_token()
 
         required_fields = [
             "codigo_cliente_fornecedor",
@@ -54,8 +51,6 @@ class ERPClientMock(ERPClientInterface):
                 logger.error(f"MockERP: campo obrigatório '{field}' ausente.")
                 raise ValueError(f"Campo obrigatório '{field}' ausente.")
 
-        logger.info("MockERP: token validado com sucesso.")
-
         ar_id = f"ar-{len(self._receivables) + 1}"
         self._receivables[ar_id] = {
             "id": ar_id,
@@ -67,6 +62,7 @@ class ERPClientMock(ERPClientInterface):
         return {"status": "success", "accounts_receivable_id": ar_id}
 
     def update_accounts_receivable(self, id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        logger.debug(f"MockERP: atualizando conta a receber {id}.")
         if id not in self._receivables:
             logger.warning(f"MockERP: conta a receber {id} não encontrada.")
             return {"status": "not_found"}
@@ -76,6 +72,7 @@ class ERPClientMock(ERPClientInterface):
         return {"status": "success", "updated_id": id}
 
     def settle_accounts_receivable(self, id: str) -> Dict[str, Any]:
+        logger.debug(f"MockERP: efetuando baixa da conta a receber {id}.")
         if id not in self._receivables:
             logger.warning(f"MockERP: conta a receber {id} não encontrada.")
             return {"status": "not_found"}
