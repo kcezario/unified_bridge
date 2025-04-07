@@ -1,68 +1,109 @@
 import os
+import json
 import requests
+from datetime import datetime
+from uuid import uuid4
 from typing import Any, Dict
+
 from app.invoice.invoice_client_interface import InvoiceClientInterface
 from app.utils.logger import get_logger
+from app.mocks.borrowers import MockBorrower
+
 
 logger = get_logger(__name__)
 
 
 class InvoiceClientNFEio(InvoiceClientInterface):
     def __init__(self):
-        self.base_url = os.getenv("NFEIO_BASE_URL", "https://api.nfse.io/v2")
+        self.base_url = os.getenv("NFEIO_BASE_URL", "https://api.nfse.io/v1")
         self.api_key = os.getenv("NFEIO_API_KEY")
+        self.company_id = os.getenv("NFEIO_COMPANY_ID")
 
-        if not self.api_key:
-            logger.error("NFE.io: Chave de API (NFEIO_API_KEY) não configurada.")
-            raise EnvironmentError("Chave de API da NFE.io não configurada.")
+        if not self.api_key or not self.company_id:
+            raise EnvironmentError("NFE.io: API Key ou Company ID não configurados corretamente.")
 
-        self.headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
+    def _headers(self):
+        return {
+            "Content-Type": "application/json",
+            "Authorization": f"{self.api_key}"
         }
 
+    def get_borrower_info(self, origem: str, identificador: str) -> Dict[str, Any]:
+        logger.debug(f"Obtendo dados do tomador: origem={origem}, identificador={identificador}")
+
+        if origem == "mock":
+            return MockBorrower.get_by_federal_tax_number(identificador)
+
+        raise NotImplementedError(f"Origem '{origem}' não implementada.")
+    
     def issue_invoice(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Emite uma nova nota fiscal de produto."""
-        company_id = data.pop("company_id")
-        url = f"{self.base_url}/companies/{company_id}/productinvoices"
-        logger.debug(f"Emitindo NFe via POST {url} com dados: {data}")
-        response = requests.post(url, json=data, headers=self.headers)
-        return self._handle_response(response)
+        """Emite uma nova nota fiscal de serviço (NFSE)."""
+        logger.debug("NFE.io: Emitindo NFSE com os dados:")
+        logger.debug(data)
 
-    def cancel_invoice(self, invoice_id: str, company_id: str) -> Dict[str, Any]:
-        """Cancela uma nota fiscal emitida."""
-        url = f"{self.base_url}/companies/{company_id}/productinvoices/{invoice_id}"
-        logger.debug(f"Cancelando NFe via DELETE {url}")
-        response = requests.delete(url, headers=self.headers)
-        return self._handle_response(response)
+        url = f"{self.base_url}/companies/{self.company_id}/serviceinvoices"
+        response = requests.post(url, headers=self._headers(), json=data)
 
-    def get_invoice_status(self, invoice_id: str, company_id: str) -> Dict[str, Any]:
-        """Consulta os detalhes de uma nota fiscal."""
-        url = f"{self.base_url}/companies/{company_id}/productinvoices/{invoice_id}"
-        logger.debug(f"Consultando NFe via GET {url}")
-        response = requests.get(url, headers=self.headers)
-        return self._handle_response(response)
-
-    def get_invoice_pdf(self, invoice_id: str, company_id: str) -> bytes:
-        """Obtém o PDF da nota fiscal emitida."""
-        url = f"{self.base_url}/companies/{company_id}/productinvoices/{invoice_id}/pdf"
-        logger.debug(f"Baixando PDF da NFe via GET {url}")
-        response = requests.get(url, headers=self.headers)
-        response.raise_for_status()
-        return response.content
-
-    def get_invoice_xml(self, invoice_id: str, company_id: str) -> str:
-        """Obtém o XML da nota fiscal emitida."""
-        url = f"{self.base_url}/companies/{company_id}/productinvoices/{invoice_id}/xml"
-        logger.debug(f"Baixando XML da NFe via GET {url}")
-        response = requests.get(url, headers=self.headers)
-        response.raise_for_status()
-        return response.text
-
-    def _handle_response(self, response: requests.Response) -> Dict[str, Any]:
-        if response.status_code >= 400:
-            logger.error(f"NFE.io: Erro HTTP {response.status_code} - {response.text}")
+        if response.status_code != 202:
+            logger.error(f"Erro ao emitir NFSE: {response.status_code} - {response.text}")
             response.raise_for_status()
 
-        logger.info("NFE.io: Requisição concluída com sucesso.")
         return response.json()
+    
+    def create_data(
+        self,
+        origem: str,
+        identificador: str,
+        city_service_code: str,
+        description: str,
+        services_amount: float,
+        taxation_type: str,
+        iss_rate: float
+    ) -> Dict[str, Any]:
+        """Monta o corpo da requisição para emissão de NFSE."""
+        borrower = self.get_borrower_info(origem, identificador)
+        if not borrower:
+            raise ValueError("Tomador de serviços não encontrado.")
+        
+        external_id = str(uuid4())
+        logger.debug(f"externalId gerado: {external_id}")
+
+        data = {
+            "borrower": borrower,
+            "externalId": external_id,
+            "cityServiceCode": city_service_code,
+            "description": description,
+            "servicesAmount": services_amount,
+            "taxationType": taxation_type,
+            "issRate": iss_rate,
+            "issuedOn": datetime.utcnow().isoformat() + "Z"
+        }
+        return data
+
+    def cancel_invoice(self, invoice_id: str) -> Dict[str, Any]:
+        """Cancela uma NFSE existente."""
+        logger.debug(f"NFE.io: Cancelando NFSE {invoice_id}...")
+
+        url = f"{self.base_url}/companies/{self.company_id}/serviceinvoices/{invoice_id}"
+        response = requests.delete(url, headers=self._headers())
+
+        if response.status_code != 200:
+            logger.error(f"Erro ao cancelar NFSE: {response.status_code} - {response.text}")
+            response.raise_for_status()
+
+        return response.json()
+
+    def get_invoice_status(self, invoice_id: str) -> Dict[str, Any]:
+        """Consulta o status/detalhes de uma NFSE."""
+        logger.debug(f"NFE.io: Consultando NFSE {invoice_id}...")
+
+        url = f"{self.base_url}/companies/{self.company_id}/serviceinvoices/{invoice_id}"
+        response = requests.get(url, headers=self._headers())
+
+        if response.status_code != 200:
+            logger.error(f"Erro ao consultar NFSE: {response.status_code} - {response.text}")
+            response.raise_for_status()
+
+        return response.json()
+
+
