@@ -17,7 +17,7 @@ class InvoiceClientNFEio(InvoiceClientInterface):
     def __init__(self):
         self.base_url = os.getenv("NFE_IO_BASE_URL", "https://api.nfse.io/v1")
         self.api_key = os.getenv("NFE_IO_API_KEY")
-        self.company_id = os.getenv("NFEIO_COMPANY_ID")
+        self.company_id = os.getenv("NFE_IO_COMPANY_ID")
 
         if not self.api_key or not self.company_id:
             raise EnvironmentError("NFE.io: API Key ou Company ID não configurados corretamente.")
