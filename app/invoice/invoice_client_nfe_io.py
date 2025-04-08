@@ -9,7 +9,6 @@ from app.invoice.invoice_client_interface import InvoiceClientInterface
 from app.utils.logger import get_logger
 from app.mocks.borrowers import MockBorrower
 
-
 logger = get_logger(__name__)
 
 
@@ -20,7 +19,8 @@ class InvoiceClientNFEio(InvoiceClientInterface):
         self.company_id = os.getenv("NFE_IO_COMPANY_ID")
 
         if not self.api_key or not self.company_id:
-            raise EnvironmentError("NFE.io: API Key ou Company ID não configurados corretamente.")
+            logger.error("NFE.io: API Key ou Company ID não configurados.")
+            raise EnvironmentError("Credenciais da NFE.io não configuradas corretamente.")
 
     def _headers(self):
         return {
@@ -32,10 +32,49 @@ class InvoiceClientNFEio(InvoiceClientInterface):
         logger.debug(f"Obtendo dados do tomador: origem={origem}, identificador={identificador}")
 
         if origem == "mock":
-            return MockBorrower.get_by_federal_tax_number(identificador)
+            return MockBorrower.get_by_federal_tax_number(int(identificador))
 
         raise NotImplementedError(f"Origem '{origem}' não implementada.")
-    
+
+    def create_data(
+        self,
+        origem: str,
+        identificador: str,
+        city_service_code: str,
+        description: str,
+        services_amount: float,
+        taxation_type: str,
+        iss_rate: float,
+        federal_service_code: str,
+        cnae_code: str,
+        rps_serial_number: str,
+        rps_number: int
+    ) -> Dict[str, Any]:
+        """Monta o corpo da requisição para emissão de NFSE."""
+        borrower = self.get_borrower_info(origem, identificador)
+        if not borrower:
+            raise ValueError("Tomador de serviços não encontrado.")
+
+        external_id = str(uuid4())
+        logger.debug(f"externalId gerado: {external_id}")
+
+        data = {
+            "borrower": borrower,
+            "externalId": external_id,
+            "cityServiceCode": city_service_code,
+            "federalServiceCode": federal_service_code,
+            "cnaeCode": cnae_code,
+            "description": description,
+            "servicesAmount": services_amount,
+            "rpsSerialNumber": rps_serial_number,
+            "rpsNumber": rps_number,
+            "taxationType": taxation_type,
+            "issRate": iss_rate,
+            "issuedOn": datetime.utcnow().isoformat() + "Z",
+            "location": borrower["address"]
+        }
+        return data
+
     def issue_invoice(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Emite uma nova nota fiscal de serviço (NFSE)."""
         logger.debug("NFE.io: Emitindo NFSE com os dados:")
@@ -45,40 +84,11 @@ class InvoiceClientNFEio(InvoiceClientInterface):
         response = requests.post(url, headers=self._headers(), json=data)
 
         if response.status_code != 202:
-            logger.error(f"Erro ao emitir NFSE: {response.status_code} - {response.text}")
+            logger.error(f"Erro ao emitir NFSE: {response.status_code}")
+            logger.error(f"Corpo da resposta: {response.text}")
             response.raise_for_status()
 
         return response.json()
-    
-    def create_data(
-        self,
-        origem: str,
-        identificador: str,
-        city_service_code: str,
-        description: str,
-        services_amount: float,
-        taxation_type: str,
-        iss_rate: float
-    ) -> Dict[str, Any]:
-        """Monta o corpo da requisição para emissão de NFSE."""
-        borrower = self.get_borrower_info(origem, identificador)
-        if not borrower:
-            raise ValueError("Tomador de serviços não encontrado.")
-        
-        external_id = str(uuid4())
-        logger.debug(f"externalId gerado: {external_id}")
-
-        data = {
-            "borrower": borrower,
-            "externalId": external_id,
-            "cityServiceCode": city_service_code,
-            "description": description,
-            "servicesAmount": services_amount,
-            "taxationType": taxation_type,
-            "issRate": iss_rate,
-            "issuedOn": datetime.utcnow().isoformat() + "Z"
-        }
-        return data
 
     def cancel_invoice(self, invoice_id: str) -> Dict[str, Any]:
         """Cancela uma NFSE existente."""
@@ -105,5 +115,3 @@ class InvoiceClientNFEio(InvoiceClientInterface):
             response.raise_for_status()
 
         return response.json()
-
-
