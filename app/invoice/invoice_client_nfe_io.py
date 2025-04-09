@@ -8,11 +8,16 @@ from typing import Any, Dict
 from app.invoice.invoice_client_interface import InvoiceClientInterface
 from app.utils.logger import get_logger
 from app.mocks.borrowers import MockBorrower
+from app.invoice.utils.validators import (
+    normalize_country_code,
+    validate_borrower_type,
+    validate_tax_regime,
+    validate_required_string,
+    validate_services_amount,
+    validate_taxation_type,
+)
 from app.invoice.constants.nfe_io_constants import (
     OPTIONAL_FIELDS,
-    VALID_BORROWER_TYPES,
-    VALID_TAX_REGIMES,
-    VALID_COUNTRIES_ISO_ALPHA3,
 )
 
 
@@ -44,13 +49,6 @@ class InvoiceClientNFEio(InvoiceClientInterface):
         raise NotImplementedError(f"Origem '{origem}' não implementada.")
 
     def _borrower_validator(self, borrower: Dict[str, Any]) -> None:
-        """
-        Valida a estrutura mínima exigida pela API da Nfe.io para o campo 'borrower'.
-
-        - borrower.address.country é obrigatório (formato ISO 3166-1 alpha-3).
-        - Se 'type' estiver presente, deve estar em VALID_BORROWER_TYPES.
-        - Se 'taxRegime' estiver presente, deve estar em VALID_TAX_REGIMES.
-        """
         if not isinstance(borrower, dict):
             raise ValueError("'borrower' deve ser um dicionário.")
 
@@ -58,28 +56,26 @@ class InvoiceClientNFEio(InvoiceClientInterface):
         if not isinstance(address, dict):
             raise ValueError("'borrower.address' deve ser um dicionário.")
 
-        country = address.get("country")
-        if not country or not isinstance(country, str):
-            raise ValueError(
-                "O campo obrigatório 'borrower.address.country' está ausente ou inválido."
-            )
+        # Normaliza e valida o país
+        address["country"] = normalize_country_code(address.get("country"))
 
-        if country.upper() not in VALID_COUNTRIES_ISO_ALPHA3:
-            raise ValueError(
-                f"Sigla de país inválida: '{country}'. Esperado formato ISO 3166-1 alpha-3, ex: 'BRA', 'USA'."
-            )
+        # Valida enums
+        validate_borrower_type(borrower.get("type"))
+        validate_tax_regime(borrower.get("taxRegime"))
+        
+        
+    def _service_validator(self, data: Dict[str, Any]) -> None:
+        """
+        Valida os campos mínimos exigidos para emissão de NFSE.
+        """
 
-        borrower_type = borrower.get("type")
-        if borrower_type and borrower_type not in VALID_BORROWER_TYPES:
-            raise ValueError(
-                f"'type' inválido em borrower: '{borrower_type}'. Valores válidos: {VALID_BORROWER_TYPES}"
-            )
+        if not isinstance(data, dict):
+            raise ValueError("O payload de emissão de NFSE deve ser um dicionário.")
 
-        tax_regime = borrower.get("taxRegime")
-        if tax_regime and tax_regime not in VALID_TAX_REGIMES:
-            raise ValueError(
-                f"'taxRegime' inválido em borrower: '{tax_regime}'. Valores válidos: {VALID_TAX_REGIMES}"
-            )
+        validate_required_string("cityServiceCode", data.get("cityServiceCode"))
+        validate_required_string("description", data.get("description"))
+        validate_services_amount(data.get("servicesAmount"))
+        validate_taxation_type(data.get("taxationType"))
 
     def issue_invoice(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Emite uma nova nota fiscal de serviço (NFSE)."""
@@ -127,6 +123,8 @@ class InvoiceClientNFEio(InvoiceClientInterface):
         if not borrower:
             raise ValueError("Tomador de serviços não encontrado.")
 
+        self._borrower_validator(borrower)
+
         data = {
             "borrower": borrower,
             "cityServiceCode": city_service_code,
@@ -143,8 +141,10 @@ class InvoiceClientNFEio(InvoiceClientInterface):
                 )
 
         self._process_optional_fields(data, kwargs)
+        self._service_validator(data)
 
         return data
+
 
     def cancel_invoice(self, invoice_id: str) -> Dict[str, Any]:
         """Cancela uma NFSE existente."""

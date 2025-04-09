@@ -59,3 +59,10 @@ VALID_COUNTRIES_ISO_ALPHA3 = {
 	"UKR", "UMI", "URY", "USA", "UZB", "VAT", "VCT", "VEN", "VGB", "VIR", "VNM",
 	"VUT", "WLF", "WSM", "YEM", "ZAF", "ZMB", "ZWE"
 }
+
+VALID_TAXATION_TYPES = [
+    "None", "WithinCity", "OutsideCity", "Export", "Free", "Immune",
+    "SuspendedCourtDecision", "SuspendedAdministrativeProcedure",
+    "OutsideCityFree", "OutsideCityImmune", "OutsideCitySuspended",
+    "OutsideCitySuspendedAdministrativeProcedure", "ObjectiveImune"
+]

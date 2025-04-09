@@ -1,82 +1,77 @@
 class MockBorrower:
     mock_infos = [
         {
-            "type": "PessoaJuridica",
-            "name": "Empresa A",
-            "federalTaxNumber": 12345678000100,
-            "municipalTaxNumber": "123456",
-            "taxRegime": "Isento",
-            "email": "contato@empresaA.com",
+            "federalTaxNumber": 11111111000191,
             "address": {
-                "country": "Brasil",
+                "country": "BRA"
+            }
+        },
+        {
+            "type": "LegalEntity",
+            "name": "Empresa Recomendável",
+            "federalTaxNumber": 22222222000182,
+            "taxRegime": "Isento",
+            "email": "recomendado@empresa.com",
+            "address": {
+                "country": "BRA",
+                "postalCode": "12345-000",
+                "street": "Rua Central",
+                "number": "100",
+                "district": "Centro",
+                "city": {
+                    "code": "3550308",
+                    "name": "São Paulo"
+                },
+                "state": "SP"
+            }
+        },
+        {
+            "type": "LegalEntity",
+            "name": "Empresa Completa",
+            "federalTaxNumber": 33333333000173,
+            "municipalTaxNumber": "987654",
+            "taxRegime": "LucroPresumido",
+            "email": "completo@empresa.com",
+            "address": {
+                "country": "BRA",
                 "postalCode": "04567-000",
-                "street": "Rua Fictícia A",
-                "number": "123",
-                "additionalInformation": "Sala 1",
-                "district": "Bairro Exemplo A",
-                "city": {"code": "3550308", "name": "São Paulo"},
-                "state": "SP",
-            },
-        },
-        {
-            "type": "PessoaJuridica",
-            "name": "Empresa B",
-            "federalTaxNumber": 98765432000100,
-            "municipalTaxNumber": "654321",
-            "taxRegime": "Normal",
-            "email": "contato@empresaB.com",
-            "address": {
-                "country": "Brasil",
-                "postalCode": "12345-678",
-                "street": "Rua Fictícia B",
-                "number": "456",
-                "additionalInformation": "Sala 2",
-                "district": "Bairro Exemplo B",
-                "city": {"code": "3304557", "name": "Rio de Janeiro"},
-                "state": "RJ",
-            },
-        },
-        {
-            "type": "PessoaJuridica",
-            "name": "Empresa C",
-            "federalTaxNumber": 11223344000155,
-            "municipalTaxNumber": "789012",
-            "taxRegime": "Isento",
-            "email": "contato@empresaC.com",
-            "address": {
-                "country": "Brasil",
-                "postalCode": "98765-432",
-                "street": "Rua Fictícia C",
+                "street": "Av. Completa",
                 "number": "789",
-                "additionalInformation": "Sala 3",
-                "district": "Bairro Exemplo C",
-                "city": {"code": "4106902", "name": "Curitiba"},
-                "state": "PR",
-            },
+                "additionalInformation": "Sala 300",
+                "district": "Bairro Completo",
+                "city": {
+                    "code": "3304557",
+                    "name": "Rio de Janeiro"
+                },
+                "state": "RJ"
+            }
         },
         {
-            "type": "PessoaJuridica",
-            "name": "Empresa D",
-            "federalTaxNumber": 55667788000199,
-            "municipalTaxNumber": "345678",
-            "taxRegime": "Normal",
-            "email": "contato@empresaD.com",
+            "type": "LegalEntity",
+            "name": "Empresa Quatro",
+            "federalTaxNumber": 44444444000164,
+            "municipalTaxNumber": "123456",
+            "taxRegime": "SimplesNacional",
+            "email": "empresa4@teste.com",
             "address": {
-                "country": "Brasil",
-                "postalCode": "54321-098",
-                "street": "Rua Fictícia D",
-                "number": "101",
-                "additionalInformation": "Sala 4",
-                "district": "Bairro Exemplo D",
-                "city": {"code": "5208707", "name": "Recife"},
-                "state": "PE",
-            },
-        },
+                "country": "BRA",
+                "postalCode": "54321-000",
+                "street": "Rua Exemplo",
+                "number": "456",
+                "additionalInformation": "Conjunto B",
+                "district": "Bairro Exemplo",
+                "city": {
+                    "code": "5208707",
+                    "name": "Recife"
+                },
+                "state": "PE"
+            }
+        }
     ]
 
     @classmethod
-    def get_by_federal_tax_number(cls, federal_tax_number: int = 12345678000100):
+    def get_by_federal_tax_number(cls, federal_tax_number: int) -> dict | None:
         for info in cls.mock_infos:
-            if info["federalTaxNumber"] == federal_tax_number:
+            if info.get("federalTaxNumber") == federal_tax_number:
                 return info
         return None
