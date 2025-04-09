@@ -11,6 +11,7 @@ os.environ["LOG_DIR"] = "tests/logs"
 
 logger = get_logger("manual_test")
 
+
 def test_invoice_nfe_io():
     logger.info("🚀 Iniciando teste manual de emissão de NFSE...")
 
@@ -28,7 +29,7 @@ def test_invoice_nfe_io():
             rps_serial_number="IO",
             rps_number=1,
             taxation_type="None",
-            iss_rate=2.5
+            iss_rate=2.5,
         )
 
         response = client.issue_invoice(data)
@@ -44,6 +45,7 @@ def test_invoice_nfe_io():
 
     except Exception as e:
         logger.error(f"❌ Erro ao emitir NFSE: {e}")
+
 
 if __name__ == "__main__":
     test_invoice_nfe_io()

@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+
 load_dotenv()
 
 import logging
@@ -26,7 +27,7 @@ def get_logger(name: str) -> logging.Logger:
         # Formato do log
         formatter = logging.Formatter(
             "[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S"
+            datefmt="%Y-%m-%d %H:%M:%S",
         )
 
         # Handler para console

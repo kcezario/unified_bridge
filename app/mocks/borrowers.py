@@ -14,12 +14,9 @@ class MockBorrower:
                 "number": "123",
                 "additionalInformation": "Sala 1",
                 "district": "Bairro Exemplo A",
-                "city": {
-                    "code": "3550308",
-                    "name": "São Paulo"
-                },
-                "state": "SP"
-            }
+                "city": {"code": "3550308", "name": "São Paulo"},
+                "state": "SP",
+            },
         },
         {
             "type": "PessoaJuridica",
@@ -35,12 +32,9 @@ class MockBorrower:
                 "number": "456",
                 "additionalInformation": "Sala 2",
                 "district": "Bairro Exemplo B",
-                "city": {
-                    "code": "3304557",
-                    "name": "Rio de Janeiro"
-                },
-                "state": "RJ"
-            }
+                "city": {"code": "3304557", "name": "Rio de Janeiro"},
+                "state": "RJ",
+            },
         },
         {
             "type": "PessoaJuridica",
@@ -56,12 +50,9 @@ class MockBorrower:
                 "number": "789",
                 "additionalInformation": "Sala 3",
                 "district": "Bairro Exemplo C",
-                "city": {
-                    "code": "4106902",
-                    "name": "Curitiba"
-                },
-                "state": "PR"
-            }
+                "city": {"code": "4106902", "name": "Curitiba"},
+                "state": "PR",
+            },
         },
         {
             "type": "PessoaJuridica",
@@ -77,13 +68,10 @@ class MockBorrower:
                 "number": "101",
                 "additionalInformation": "Sala 4",
                 "district": "Bairro Exemplo D",
-                "city": {
-                    "code": "5208707",
-                    "name": "Recife"
-                },
-                "state": "PE"
-            }
-        }
+                "city": {"code": "5208707", "name": "Recife"},
+                "state": "PE",
+            },
+        },
     ]
 
     @classmethod

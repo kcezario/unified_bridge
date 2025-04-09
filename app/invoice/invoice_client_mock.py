@@ -47,7 +47,7 @@ class InvoiceClientMock(InvoiceClientInterface):
             "customer_id": data["customer_id"],
             "amount": data["amount"],
             "description": data["service_description"],
-            "status": "issued"
+            "status": "issued",
         }
 
         logger.info(f"MockInvoice: nota fiscal emitida com ID {invoice_id}")

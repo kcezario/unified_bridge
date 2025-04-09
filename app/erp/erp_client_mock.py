@@ -15,11 +15,13 @@ class ERPClientMock(ERPClientInterface):
         logger.debug("MockERP: carregando configurações do ambiente.")
         config = {
             "app_key": os.getenv("MOCK_ERP_APP_KEY"),
-            "app_secret": os.getenv("MOCK_ERP_APP_SECRET")
+            "app_secret": os.getenv("MOCK_ERP_APP_SECRET"),
         }
 
         if not config["app_key"] or not config["app_secret"]:
-            logger.error("MockERP: chaves MOCK_ERP_APP_KEY ou MOCK_ERP_APP_SECRET ausentes.")
+            logger.error(
+                "MockERP: chaves MOCK_ERP_APP_KEY ou MOCK_ERP_APP_SECRET ausentes."
+            )
             raise EnvironmentError("Variáveis de ambiente do ERP Mock ausentes.")
 
         return config
@@ -44,7 +46,7 @@ class ERPClientMock(ERPClientInterface):
             "data_vencimento",
             "valor_documento",
             "codigo_categoria",
-            "id_conta_corrente"
+            "id_conta_corrente",
         ]
         for field in required_fields:
             if field not in data:
@@ -52,16 +54,14 @@ class ERPClientMock(ERPClientInterface):
                 raise ValueError(f"Campo obrigatório '{field}' ausente.")
 
         ar_id = f"ar-{len(self._receivables) + 1}"
-        self._receivables[ar_id] = {
-            "id": ar_id,
-            **data,
-            "status": "open"
-        }
+        self._receivables[ar_id] = {"id": ar_id, **data, "status": "open"}
 
         logger.info(f"MockERP: conta a receber criada com ID {ar_id}")
         return {"status": "success", "accounts_receivable_id": ar_id}
 
-    def update_accounts_receivable(self, id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    def update_accounts_receivable(
+        self, id: str, data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         logger.debug(f"MockERP: atualizando conta a receber {id}.")
         if id not in self._receivables:
             logger.warning(f"MockERP: conta a receber {id} não encontrada.")

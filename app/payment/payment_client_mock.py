@@ -47,7 +47,7 @@ class PaymentClientMock(PaymentClientInterface):
             "customer_id": data["customer_id"],
             "amount": data["amount"],
             "due_date": data["due_date"],
-            "status": "pending"
+            "status": "pending",
         }
 
         logger.info(f"MockPayment: pagamento criado com ID {payment_id}")
@@ -69,5 +69,7 @@ class PaymentClientMock(PaymentClientInterface):
             logger.warning(f"MockPayment: pagamento {payment_id} não encontrado.")
             return {"status": "not_found"}
 
-        logger.info(f"MockPayment: status do pagamento {payment_id} = {payment['status']}")
+        logger.info(
+            f"MockPayment: status do pagamento {payment_id} = {payment['status']}"
+        )
         return {"status": "success", "payment_status": payment["status"]}

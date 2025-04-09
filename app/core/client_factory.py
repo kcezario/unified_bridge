@@ -10,6 +10,7 @@ from app.payment.payment_client_mock import PaymentClientMock
 
 # Futuras implementações reais (ex: Omie)
 from app.erp.erp_client_omie import ERPClientOmie
+
 # from app.invoice.nfeio_client import NFeIOClient
 # from app.payment.asaas_client import AsaasClient
 

@@ -30,7 +30,7 @@ class ERPClientOmie(ERPClientInterface):
         - update_accounts_receivable()
         - settle_accounts_receivable()
     """
-    
+
     def __init__(self):
         config = self._get_config()
         self.base_url = config["base_url"]
@@ -44,7 +44,7 @@ class ERPClientOmie(ERPClientInterface):
             "app_key": os.getenv("OMIE_APP_KEY"),
             "app_secret": os.getenv("OMIE_APP_SECRET"),
             "base_url": os.getenv("OMIE_BASE_URL"),
-            "default_account_id": os.getenv("OMIE_DEFAULT_ACCOUNT_ID")
+            "default_account_id": os.getenv("OMIE_DEFAULT_ACCOUNT_ID"),
         }
 
         if not config["app_key"] or not config["app_secret"]:
@@ -52,14 +52,14 @@ class ERPClientOmie(ERPClientInterface):
             raise EnvironmentError("Credenciais da Omie não configuradas.")
 
         return config
-    
+
     def _build_payload(self, call: str, data: Dict[str, Any]) -> Dict[str, Any]:
         logger.debug(f"Omie: construindo payload para chamada {call}.")
         return {
             "call": call,
             "app_key": self.app_key,
             "app_secret": self.app_secret,
-            "param": [data]
+            "param": [data],
         }
 
     def _post_to_omie(self, path: str, payload: Dict[str, Any]) -> requests.Response:
@@ -98,13 +98,15 @@ class ERPClientOmie(ERPClientInterface):
         Returns:
             Dict[str, Any]: Resposta da API contendo os códigos do lançamento ou erro.
         """
-        
+
         logger.debug("Omie: criando conta a receber com os dados fornecidos.")
-        logger.debug(f"Omie: dados recebidos:\n{json.dumps(data, indent=2, ensure_ascii=False)}")
+        logger.debug(
+            f"Omie: dados recebidos:\n{json.dumps(data, indent=2, ensure_ascii=False)}"
+        )
         for field in [
             "codigo_cliente_fornecedor",
             "valor_documento",
-            "id_conta_corrente"
+            "id_conta_corrente",
         ]:
             if field in data:
                 data[field] = str(data[field])
@@ -113,7 +115,9 @@ class ERPClientOmie(ERPClientInterface):
         response = self._post_to_omie("financas/contareceber/", payload)
         return self._handle_response(response)
 
-    def update_accounts_receivable(self, id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    def update_accounts_receivable(
+        self, id: str, data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Atualiza um lançamento existente no Contas a Receber.
 
@@ -125,31 +129,19 @@ class ERPClientOmie(ERPClientInterface):
         Returns:
             Dict[str, Any]: Resposta da API com a confirmação da atualização.
         """
-        
+
         logger.debug(f"Omie: iniciando atualização da conta a receber {id}.")
 
-        data_with_id = {
-            "codigo_lancamento_omie": int(id),
-            **data
-        }
+        data_with_id = {"codigo_lancamento_omie": int(id), **data}
 
-        payload = self._build_payload(
-            call="AlterarContaReceber",
-            data=data_with_id
-        )
+        payload = self._build_payload(call="AlterarContaReceber", data=data_with_id)
 
         response = self._post_to_omie("financas/contareceber/", payload)
         return self._handle_response(response)
 
-
     def settle_accounts_receivable(
-        self,
-        id: str,
-        valor: str,
-        conta_corrente_id: str,
-        data: str
+        self, id: str, valor: str, conta_corrente_id: str, data: str
     ) -> Dict[str, Any]:
-        
         """
         Realiza a baixa de um título em aberto no Contas a Receber da Omie.
 
@@ -160,7 +152,7 @@ class ERPClientOmie(ERPClientInterface):
         Returns:
             Dict[str, Any]: Resposta da API com os dados da baixa, incluindo valor baixado e status de liquidação.
         """
-    
+
         logger.debug(f"Omie: iniciando baixa da conta a receber {id}.")
 
         payload_data = {
@@ -168,14 +160,10 @@ class ERPClientOmie(ERPClientInterface):
             "codigo_conta_corrente": conta_corrente_id,
             "valor": valor,
             "data": data,
-            "observacao": "Baixa automática via API"
+            "observacao": "Baixa automática via API",
         }
 
-        payload = self._build_payload(
-            call="LancarRecebimento",
-            data=payload_data
-        )
+        payload = self._build_payload(call="LancarRecebimento", data=payload_data)
 
         response = self._post_to_omie("financas/contareceber/", payload)
         return self._handle_response(response)
-

@@ -17,10 +17,7 @@ class PaymentClientAsaas(PaymentClientInterface):
             raise EnvironmentError("Asaas: chave de API não configurada.")
 
     def _headers(self):
-        return {
-            "Content-Type": "application/json",
-            "access_token": self.api_key
-        }
+        return {"Content-Type": "application/json", "access_token": self.api_key}
 
     def create_payment(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Cria um novo pagamento (boleto, pix, cartão) para um cliente."""
@@ -31,7 +28,9 @@ class PaymentClientAsaas(PaymentClientInterface):
         response = requests.post(url, headers=self._headers(), json=data)
 
         if response.status_code not in (200, 201):
-            logger.error(f"Asaas: erro ao criar pagamento: {response.status_code} - {response.text}")
+            logger.error(
+                f"Asaas: erro ao criar pagamento: {response.status_code} - {response.text}"
+            )
             response.raise_for_status()
 
         return response.json()
@@ -46,7 +45,9 @@ class PaymentClientAsaas(PaymentClientInterface):
         response = requests.put(url, headers=self._headers(), json=data)
 
         if response.status_code != 200:
-            logger.error(f"Asaas: erro ao cancelar pagamento: {response.status_code} - {response.text}")
+            logger.error(
+                f"Asaas: erro ao cancelar pagamento: {response.status_code} - {response.text}"
+            )
             response.raise_for_status()
 
         return response.json()
@@ -59,7 +60,9 @@ class PaymentClientAsaas(PaymentClientInterface):
         response = requests.get(url, headers=self._headers())
 
         if response.status_code != 200:
-            logger.error(f"Asaas: erro ao consultar status: {response.status_code} - {response.text}")
+            logger.error(
+                f"Asaas: erro ao consultar status: {response.status_code} - {response.text}"
+            )
             response.raise_for_status()
 
         return response.json()

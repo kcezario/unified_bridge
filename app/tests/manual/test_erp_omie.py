@@ -28,7 +28,9 @@ def create_accounts_receivable(data: dict):
     logger.info(f"✅ Resultado da criação: {result}")
 
     global lancamento_id
-    lancamento_id = result.get("codigo_lancamento_omie") or result.get("codigo_lancamento_integracao")
+    lancamento_id = result.get("codigo_lancamento_omie") or result.get(
+        "codigo_lancamento_integracao"
+    )
     logger.debug(f"ID do lançamento obtido: {lancamento_id}")
     return lancamento_id
 
@@ -42,7 +44,9 @@ def update_accounts_receivable(id: str, update_data: dict):
     return result
 
 
-def settle_accounts_receivable(id: str, valor: float, conta_corrente_id: str, data: str = None):
+def settle_accounts_receivable(
+    id: str, valor: float, conta_corrente_id: str, data: str = None
+):
     logger.info("💰 Testando baixa da conta a receber...")
 
     erp_client = ClientFactory.get_erp_client()
@@ -51,7 +55,7 @@ def settle_accounts_receivable(id: str, valor: float, conta_corrente_id: str, da
         id=id,
         valor=str(valor),
         conta_corrente_id=conta_corrente_id,
-        data=data or datetime.today().strftime("%d/%m/%Y")
+        data=data or datetime.today().strftime("%d/%m/%Y"),
     )
     logger.info(f"✅ Resultado da baixa: {result}")
     return result
@@ -66,19 +70,19 @@ if __name__ == "__main__":
         "codigo_categoria": "1.01.02",
         "data_previsao": "04/04/2025",
         "id_conta_corrente": 6823222790,
-        "observacao": "Teste via API Omie"
+        "observacao": "Teste via API Omie",
     }
 
     lancamento_id = create_accounts_receivable(data_criacao)
 
     update_accounts_receivable(
         id=str(lancamento_id),
-        update_data={"observacao": "Observação atualizada via teste"}
+        update_data={"observacao": "Observação atualizada via teste"},
     )
 
     settle_accounts_receivable(
         id=str(lancamento_id),
         valor=1234.00,
         conta_corrente_id="6823222790",
-        data="04/04/2025"
+        data="04/04/2025",
     )

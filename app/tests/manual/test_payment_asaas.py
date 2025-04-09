@@ -23,7 +23,7 @@ def test_payment_asaas():
         "billingType": "PIX",
         "value": 25.00,
         "dueDate": (datetime.today() + timedelta(days=1)).strftime("%Y-%m-%d"),
-        "description": "Pagamento de teste via API"
+        "description": "Pagamento de teste via API",
     }
 
     created = client.create_payment(payment_data)

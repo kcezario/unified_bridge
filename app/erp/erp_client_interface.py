@@ -9,7 +9,9 @@ class ERPClientInterface(ABC):
         pass
 
     @abstractmethod
-    def update_accounts_receivable(self, id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    def update_accounts_receivable(
+        self, id: str, data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Atualiza um lançamento de contas a receber existente."""
         pass
 
