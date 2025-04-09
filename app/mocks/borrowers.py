@@ -1,7 +1,7 @@
 class MockBorrower:
     mock_infos = [
         {
-            "federalTaxNumber": 11111111000191,
+            "federalTaxNumber": 67690174000102,
             "address": {
                 "country": "BRA"
             }
@@ -9,7 +9,7 @@ class MockBorrower:
         {
             "type": "LegalEntity",
             "name": "Empresa Recomendável",
-            "federalTaxNumber": 22222222000182,
+            "federalTaxNumber": 59696922000128,
             "taxRegime": "Isento",
             "email": "recomendado@empresa.com",
             "address": {
@@ -28,7 +28,7 @@ class MockBorrower:
         {
             "type": "LegalEntity",
             "name": "Empresa Completa",
-            "federalTaxNumber": 33333333000173,
+            "federalTaxNumber": 30856809000180,
             "municipalTaxNumber": "987654",
             "taxRegime": "LucroPresumido",
             "email": "completo@empresa.com",
@@ -49,7 +49,7 @@ class MockBorrower:
         {
             "type": "LegalEntity",
             "name": "Empresa Quatro",
-            "federalTaxNumber": 44444444000164,
+            "federalTaxNumber": 57455663000118,
             "municipalTaxNumber": "123456",
             "taxRegime": "SimplesNacional",
             "email": "empresa4@teste.com",
@@ -61,7 +61,7 @@ class MockBorrower:
                 "additionalInformation": "Conjunto B",
                 "district": "Bairro Exemplo",
                 "city": {
-                    "code": "5208707",
+                    "code": "2611606",
                     "name": "Recife"
                 },
                 "state": "PE"
@@ -75,3 +75,10 @@ class MockBorrower:
             if info.get("federalTaxNumber") == federal_tax_number:
                 return info
         return None
+    
+    @classmethod
+    def get(cls, index: int = 0):
+        if 0 <= index < len(cls.mock_infos):
+            return cls.mock_infos[index]
+        return None
+
