@@ -61,6 +61,15 @@ def settle_accounts_receivable(
     return result
 
 
+def cancel_accounts_receivable(id: str):
+    logger.info("🧹 Testando cancelamento da conta a receber...")
+
+    erp_client = ClientFactory.get_erp_client()
+    result = erp_client.cancel_accounts_receivable(id=id)
+    logger.info(f"✅ Resultado do cancelamento: {result}")
+    return result
+
+
 if __name__ == "__main__":
     data_criacao = {
         "codigo_lancamento_integracao": codigo_integracao,
@@ -86,3 +95,5 @@ if __name__ == "__main__":
         conta_corrente_id="6823222790",
         data="04/04/2025",
     )
+
+    cancel_accounts_receivable(id=str(lancamento_id))

@@ -19,3 +19,8 @@ class ERPClientInterface(ABC):
     def settle_accounts_receivable(self, id: str) -> Dict[str, Any]:
         """Dá baixa (marca como pago) em um lançamento de contas a receber."""
         pass
+    
+    @abstractmethod
+    def cancel_accounts_receivable(self, id: str) -> Dict[str, Any]:
+        """Cancela um lançamento de contas a receber existente."""
+        pass

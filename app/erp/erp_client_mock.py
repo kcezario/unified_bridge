@@ -80,3 +80,14 @@ class ERPClientMock(ERPClientInterface):
         self._receivables[id]["status"] = "settled"
         logger.info(f"MockERP: conta a receber {id} marcada como paga.")
         return {"status": "success", "settled_id": id}
+
+
+    def cancel_accounts_receivable(self, id: str) -> Dict[str, Any]:
+        logger.debug(f"MockERP: cancelando conta a receber {id}.")
+        if id not in self._receivables:
+            logger.warning(f"MockERP: conta a receber {id} não encontrada.")
+            return {"status": "not_found"}
+
+        self._receivables[id]["status"] = "cancelled"
+        logger.info(f"MockERP: conta a receber {id} cancelada com sucesso.")
+        return {"status": "success", "cancelled_id": id}

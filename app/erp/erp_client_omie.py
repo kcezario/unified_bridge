@@ -167,3 +167,25 @@ class ERPClientOmie(ERPClientInterface):
 
         response = self._post_to_omie("financas/contareceber/", payload)
         return self._handle_response(response)
+
+    def cancel_accounts_receivable(self, id: str) -> Dict[str, Any]:
+        """
+        Cancela (exclui) um lançamento existente no Contas a Receber da Omie.
+
+        Args:
+            id (str): Código do lançamento (`codigo_lancamento_omie`) a ser cancelado.
+
+        Returns:
+            Dict[str, Any]: Resposta da API com a confirmação da exclusão.
+        """
+
+        logger.debug(f"Omie: iniciando cancelamento da conta a receber {id}.")
+
+        payload_data = {
+            "codigo_lancamento_omie": int(id)
+        }
+
+        payload = self._build_payload(call="ExcluirContaReceber", data=payload_data)
+
+        response = self._post_to_omie("financas/contareceber/", payload)
+        return self._handle_response(response)
