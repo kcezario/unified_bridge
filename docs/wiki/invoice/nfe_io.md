@@ -29,7 +29,7 @@ Responsável por:
 - Realizar chamadas autenticadas à API REST da NFE.io
 - Validar dados do tomador de serviço (borrower)
 - Tratar respostas HTTP e erros lógicos
-- Realizar cancelamento e consulta de status de notas fiscais emitidas
+- Realizar cancelamento, consulta de status e download em PDF das notas fiscais emitidas
 
 ---
 
@@ -86,6 +86,25 @@ Consulta os **detalhes e status atual** de uma NFSE.
   GET /companies/{company_id}/serviceinvoices/{invoice_id}
   ```
 - Retorna os dados da nota, incluindo status atual, data de emissão, tomador, valores e impostos.
+
+---
+
+### 5. `download_invoice(invoice_id: str) -> dict`
+
+Obtém o **PDF da nota fiscal de serviço (NFSE)** emitida.
+
+- Endpoint:
+  ```
+  GET /companies/{company_id}/serviceinvoices/{invoice_id}/pdf
+  ```
+- Requer apenas o `invoice_id` válido e retorna o conteúdo em base64 ou link para download.
+- Em caso de sucesso, retorna:
+  ```json
+  {
+    "pdf": "<base64_encoded_content>"
+  }
+  ```
+- Em caso de falha, a API pode retornar códigos `401`, `404`, `500`, entre outros.
 
 ---
 

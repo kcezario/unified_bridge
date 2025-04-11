@@ -179,3 +179,21 @@ class InvoiceClientNFEio(InvoiceClientInterface):
             response.raise_for_status()
 
         return response.json()
+
+    def download_invoice(self, invoice_id: str) -> Dict[str, Any]:
+        """Obtém o link para download do PDF da NFSE emitida."""
+        logger.debug(f"NFE.io: Solicitando PDF da nota {invoice_id}...")
+
+        url = f"{self.base_url}/companies/{self.company_id}/serviceinvoices/{invoice_id}/pdf"
+        response = requests.get(url, headers=self._headers())
+
+        if response.status_code != 200:
+            logger.error(
+                f"Erro ao baixar PDF da NFSE: {response.status_code} - {response.text}"
+            )
+            response.raise_for_status()
+
+        pdf_url = response.text.strip('"')  # A API retorna uma string com aspas
+        logger.info(f"NFE.io: PDF disponível em: {pdf_url}")
+
+        return {"status": "success", "invoice_id": invoice_id, "pdf_url": pdf_url}

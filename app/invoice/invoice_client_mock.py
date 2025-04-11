@@ -71,3 +71,13 @@ class InvoiceClientMock(InvoiceClientInterface):
 
         logger.info(f"MockInvoice: status da nota {invoice_id} = {invoice['status']}")
         return {"status": "success", "invoice_status": invoice["status"]}
+
+    def download_invoice(self, invoice_id: str) -> Dict[str, Any]:
+        invoice = self._invoices.get(invoice_id)
+        if not invoice:
+            logger.warning(f"MockInvoice: nota fiscal {invoice_id} não encontrada para download.")
+            return {"status": "not_found"}
+
+        pdf_url = f"https://mock-invoice.local/pdf/{invoice_id}.pdf"
+        logger.info(f"MockInvoice: link gerado para download da nota {invoice_id}: {pdf_url}")
+        return {"status": "success", "invoice_id": invoice_id, "pdf_url": pdf_url}

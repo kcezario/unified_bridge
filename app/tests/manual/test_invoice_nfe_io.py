@@ -37,7 +37,11 @@ def test_invoice_nfe_io():
                 city_service_code=service_data["cityServiceCode"],
                 description=service_data["description"],
                 services_amount=service_data["servicesAmount"],
-                **{k: v for k, v in service_data.items() if k not in ["cityServiceCode", "description", "servicesAmount"]}
+                **{
+                    k: v
+                    for k, v in service_data.items()
+                    if k not in ["cityServiceCode", "description", "servicesAmount"]
+                },
             )
 
             response = client.issue_invoice(data)
@@ -48,6 +52,10 @@ def test_invoice_nfe_io():
                 logger.info(f"🔎 Consultando status da NFSE: {invoice_id}")
                 status = client.get_invoice_status(invoice_id)
                 logger.info(f"📄 Status da nota: {status}")
+
+                logger.info(f"📥 Tentando download do PDF da NFSE: {invoice_id}")
+                pdf = client.download_invoice(invoice_id)
+                logger.info(f"📎 PDF disponível em: {pdf}")
             else:
                 logger.warning("⚠️ Nenhum ID retornado na emissão.")
 

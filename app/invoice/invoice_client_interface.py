@@ -17,3 +17,8 @@ class InvoiceClientInterface(ABC):
     def get_invoice_status(self, invoice_id: str) -> Dict[str, Any]:
         """Consulta o status de uma nota fiscal."""
         pass
+
+    @abstractmethod
+    def download_invoice(self, invoice_id: str) -> Dict[str, Any]:
+        """Obtém o link ou conteúdo em PDF da nota fiscal emitida."""
+        pass
