@@ -1,67 +1,85 @@
-# Unified Bridge
+# 🧠 Unified Bridge
 
-Integração modular entre sistemas de pagamento, faturamento e ERP.
-
-Este projeto implementa uma camada unificada para comunicação com diferentes serviços externos, como:
-
-- **Asaas**: pagamentos
-- **NFE.io**: emissão de notas fiscais de serviço
-- **Omie**: contas a receber (ERP)
-
-## 🔧 Requisitos
-
-- Python 3.11+
-- Docker (opcional para ambiente isolado)
-- Variáveis de ambiente definidas (ver `.env.example`)
-
-## ▶️ Executando localmente
-
-1. Instale as dependências:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. Configure o `.env` a partir do exemplo:
-   ```bash
-   cp .env.example .env
-   ```
-
-3. Rode a aplicação (modo exemplo):
-   ```bash
-   python -m app.tests.manual.main
-   ```
-
-## 🧪 Testes
-
-- Testes manuais:
-  ```bash
-  python -m app.tests.manual.test_invoice_nfe_io
-  ```
-
-- Testes unitários (se aplicável):
-  ```bash
-  pytest
-  ```
-
-## 📚 Documentação técnica
-
-Toda a documentação dos serviços e integrações está disponível na wiki interna do projeto:
-
-👉 [Acesse a documentação técnica completa](docs/wiki/index.md)
+**Unified Bridge** é uma aplicação modular que unifica a comunicação com provedores externos de **pagamentos**, **emissão de notas fiscais** e **ERPs**, abstraindo a complexidade de cada serviço em uma arquitetura extensível e desacoplada.
 
 ---
 
-## 🧱 Estrutura modular
+## 📌 Visão Geral
 
-O sistema está dividido em três domínios principais:
-
-- [`payment/`](docs/wiki/payment/index.md)
-- [`invoice/`](docs/wiki/invoice/index.md)
-- [`erp/`](docs/wiki/erp/index.md)
-
-Cada módulo implementa uma interface padrão, com opção de mocks para testes manuais e integração com provedores reais via client API.
+Este projeto foi desenvolvido com o objetivo de centralizar integrações críticas de negócio em uma única ponte unificadora. Através de interfaces padronizadas e clientes intercambiáveis (mock ou real), é possível alternar entre provedores sem alterar a lógica de negócio.
 
 ---
 
-## 🛠️ Em desenvolvimento
+## 🔧 Funcionalidades
+
+- Integração com múltiplos provedores:
+  - 📄 Notas Fiscais: [NFE.io](https://nfe.io/)
+  - 💰 Pagamentos: [Asaas](https://asaas.com/)
+  - 📊 ERP: [Omie](https://omie.com.br/)
+
+- Arquitetura orientada a interfaces, com suporte a:
+  - Mocks para ambientes de desenvolvimento
+  - Testes manuais independentes por domínio
+  - Validação automática de dados de entrada
+
+---
+
+## 🗂 Estrutura de pastas
+
+```bash
+app/
+├── core/           # Fábrica de clientes e lógica central
+├── erp/            # Integração com sistemas ERP (Omie, Mock)
+├── invoice/        # Emissão de NFSE (NFE.io, Mock)
+├── payment/        # Geração e consulta de pagamentos (Asaas, Mock)
+├── mocks/          # Dados simulados para testes
+├── tests/manual/   # Scripts de teste manuais
+├── utils/          # Logger, validações e handlers
+└── config/         # Configurações e arquivos auxiliares
+```
+
+---
+
+## 📖 Documentação
+
+A documentação técnica completa está disponível em:
+
+📚 [`docs/wiki/index.md`](docs/wiki/index.md)
+
+Ela está organizada por módulo:
+
+- [`docs/wiki/erp/`](docs/wiki/erp/index.md)
+- [`docs/wiki/invoice/`](docs/wiki/invoice/index.md)
+- [`docs/wiki/payment/`](docs/wiki/payment/index.md)
+
+Cada seção cobre:
+- Visão geral
+- Interface implementada
+- Cliente mock
+- Integrações reais com provedores
+
+---
+
+## 🚀 Requisitos
+
+- Python 3.10+
+- `pip install -r requirements.txt`
+- Configurar variáveis de ambiente (veja `.env.example`)
+
+---
+
+## 🧪 Testes manuais
+
+Todos os módulos possuem testes manuais organizados em `app/tests/manual/`, permitindo validação sem necessidade de interface gráfica ou front-end.
+
+---
+
+## 🛠 Desenvolvimento
+
+Ambientes de desenvolvimento podem usar os **clientes mock** via `.env`:
+
+```env
+ERP_CLIENT=mock
+INVOICE_CLIENT=mock
+PAYMENT_CLIENT=mock
 ```

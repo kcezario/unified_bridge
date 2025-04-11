@@ -5,28 +5,28 @@ Bem-vindo à documentação técnica do Unified Bridge. Este sistema foi projeta
 ## 📂 Módulos
 
 ### [`payment`](payment/index.md)
-Módulo responsável por integração com serviços de **pagamentos**. Atualmente, utiliza o provedor Asaas.
+Módulo responsável pela integração com serviços de **pagamento**. Atualmente, utiliza o provedor **Asaas**.
 
-- Geração de cobranças
-- Cancelamento
-- Webhook de pagamento
-- Download de boleto
+- Geração de cobranças (PIX, boleto, cartão)
+- Cancelamento de cobranças
+- Consulta de status de pagamento
 - Interfaces e testes com mocks
 
 ### [`invoice`](invoice/index.md)
-Módulo responsável por emissão de **notas fiscais de serviço**. Atualmente, utiliza o provedor NFE.io.
+Módulo responsável pela emissão de **notas fiscais de serviço (NFSE)**. Atualmente, utiliza o provedor **NFE.io**.
 
 - Emissão e cancelamento de NFSE
-- Consulta e download da nota
-- Validação de dados do tomador
+- Consulta de status da nota fiscal
+- Validação dos dados do tomador de serviço
 - Interfaces e testes com mocks
+- Testes combinatórios com mocks de tomadores e serviços
 
 ### [`erp`](erp/index.md)
-Módulo de integração com **ERP** para controle de contas a receber. Atualmente, utiliza o provedor Omie.
+Módulo de integração com sistemas de **ERP** para controle de contas a receber. Atualmente, utiliza o provedor **Omie**.
 
 - Criação de contas a receber
-- Baixa de liquidação
-- Cancelamento de lançamentos
+- Atualização de lançamentos
+- Baixa de liquidação (recebimento)
 - Interfaces e testes com mocks
 
 ---
@@ -35,17 +35,18 @@ Módulo de integração com **ERP** para controle de contas a receber. Atualment
 
 Cada módulo segue uma estrutura comum:
 
-- `interfaces/`: definição das funções esperadas
-- `clients/`: integração real com a API externa
+- `interface/`: definição da interface esperada
+- `client/`: implementação real da integração com a API externa
 - `mock/`: simulação de comportamento para testes
-- `services/`: lógica de negócio intermediária
 - `tests/manual/`: scripts de testes manuais
+- `utils/`: funções auxiliares e validações
 
 ---
 
 ## 📄 Observações
 
-- As credenciais e configurações dos serviços são injetadas via `.env`.
-- Cada integração real possui documentação oficial referenciada na página interna do módulo.
+- As credenciais e configurações dos serviços são carregadas via variáveis de ambiente no `.env`.
+- Cada integração real segue a documentação oficial do provedor, referenciada na respectiva página do módulo.
+- Os logs são gerados com base no nível definido por `LOG_LEVEL` e armazenados em `LOG_DIR`, conforme definido no ambiente.
 
 Para detalhes específicos de cada serviço, acesse as páginas dedicadas.

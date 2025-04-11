@@ -1,78 +1,69 @@
-# 🏢 Módulo de ERP (`erp`)
+# 🧾 Módulo ERP — Visão Geral
 
-Este módulo é responsável pela integração com sistemas de gestão financeira (ERP), realizando controle de contas a receber.
+Este módulo é responsável pela integração com sistemas de **ERP**, permitindo o controle de **contas a receber** dentro da arquitetura do Unified Bridge.
 
-## 🔗 Provedor atual: [Omie](https://developer.omie.com.br/)
+Atualmente, o sistema suporta dois tipos de cliente ERP:
 
----
-
-## ✅ Funcionalidades Suportadas
-
-- **Criação de contas a receber** (`/financas/contareceber/incluir`)
-- **Cancelamento de contas a receber** (`/financas/contareceber/excluir`)
-- **Baixa (liquidação) de contas a receber** (`/financas/contareceber/baixar`)
+- `mock`: usado para testes e validação local
+- `omie`: integração real com a API do Omie
 
 ---
 
-## 🧩 Estrutura do Módulo
+## 🧩 Estrutura
 
+- `erp_client_interface.py`: define a interface padrão para qualquer cliente ERP.
+- `erp_client_mock.py`: implementação mock para simular comportamento do ERP sem dependência externa.
+- `erp_client_omie.py`: cliente real que se comunica com a API REST da Omie.
+- `tests/manual/test_erp_omie.py`: script manual para testar criação, atualização e baixa de contas a receber.
+
+---
+
+## 🔌 Interface: `ERPClientInterface`
+
+A interface define os seguintes métodos obrigatórios:
+
+```python
+class ERPClientInterface(ABC):
+    def create_accounts_receivable(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Cria um novo lançamento de contas a receber."""
+        pass
+
+    def update_accounts_receivable(self, id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Atualiza um lançamento de contas a receber existente."""
+        pass
+
+    def settle_accounts_receivable(self, id: str) -> Dict[str, Any]:
+        """Dá baixa (marca como pago) em um lançamento de contas a receber."""
+        pass
 ```
-erp/
-├── interfaces/                # Contrato da integração
-│   └── erp_interface.py
-├── erp_client_omie.py         # Integração com a API da Omie
-├── erp_service.py             # Lógica de criação, baixa e cancelamento
-├── mock/                      # Dados simulados para testes
-│   ├── mock_customer.py       # Mocks de clientes
-│   ├── mock_receivable.py     # Mocks de contas a receber
-│   └── mock_erp_client.py     # Mock do client principal
-└── tests/manual/
-    └── test_erp_omie.py       # Testes manuais com criação, baixa e exclusão
+
+Essa padronização permite alternar facilmente entre implementações reais e simuladas, sem alterar a lógica de negócio.
+
+---
+
+## 🧪 Implementação Mock
+
+O `ERPClientMock` simula um ambiente de ERP com as seguintes características:
+
+- Armazena lançamentos de contas a receber em memória (`dict`).
+- Gera IDs incrementais (`ar-1`, `ar-2`, ...).
+- Permite criar, atualizar e baixar lançamentos.
+- Valida presença de campos obrigatórios como:
+  - `codigo_cliente_fornecedor`
+  - `data_vencimento`
+  - `valor_documento`
+  - `codigo_categoria`
+  - `id_conta_corrente`
+
+A autenticação é simulada via token gerado a partir de variáveis de ambiente:
+
+```env
+MOCK_ERP_APP_KEY=...
+MOCK_ERP_APP_SECRET=...
 ```
 
----
-
-## 🧪 Testes Manuais
-
-O script `test_erp_omie.py` executa testes com as três principais ações:
-
-- `criar_conta_receber()`
-- `baixar_conta_receber()`
-- `cancelar_conta_receber()`
+Este mock é utilizado nos testes manuais e em ambientes locais ou de desenvolvimento para garantir independência da API externa.
 
 ---
 
-## 🔌 Interface Implementada
-
-Arquivo: `erp/interfaces/erp_interface.py`
-
-### Métodos esperados:
-
-- `criar_conta_receber(data: dict) -> dict`
-- `baixar_conta_receber(identificador: str, data: dict) -> dict`
-- `cancelar_conta_receber(identificador: str) -> dict`
-
----
-
-## 🧪 Mock para Testes
-
-O mock `mock_erp_client.py` simula todas as chamadas principais com dados dos módulos:
-
-- `mock_customer.py` (clientes)
-- `mock_receivable.py` (contas a receber)
-
----
-
-## 📌 Observações
-
-- O código Omie da conta (`codigo_lancamento_omie`) é persistido após a criação.
-- A chave de API e app_key são lidas do `.env`:
-  - `OMIE_APP_KEY`
-  - `OMIE_APP_SECRET`
-- O método `baixar_conta_receber()` exige a data da liquidação e valor.
-
----
-
-## 📚 Referência Oficial
-
-- [Documentação da API Omie](https://developer.omie.com.br/)
+Para detalhes sobre a integração real com o Omie, acesse [`omie.md`](omie.md).
