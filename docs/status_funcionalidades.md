@@ -37,17 +37,12 @@ Este documento consolida as funcionalidades requisitadas por stakeholders e o st
 
 ## 📊 ERPClientInterface (Omie)
 
-| Funcionalidade                                         | Método esperado na interface                   | Status         |
-|--------------------------------------------------------|--------------------------------------------------|----------------|
-| ✅ Criação de conta a receber                          | `create_accounts_receivable(data: dict)`        | ✅ Implementado |
-| ✅ Baixa (liquidação) da conta                         | `settle_accounts_receivable(...)`               | ✅ Implementado |
-| ✅ Atualização de conta                                | `update_accounts_receivable(id: str, data: dict)` | ✅ Implementado |
-| ❌ Cancelamento da conta a receber                     | `cancel_accounts_receivable(id: str)`           | ❌ Não implementado |
-
-🟡 **Ações pendentes**:
-- Adicionar o método `cancel_accounts_receivable()` à `ERPClientInterface`.
-- Implementar a chamada real via método `ExcluirContaReceber` na API Omie.
-
+| Funcionalidade                                 | Método esperado na interface                      | Status         |
+|------------------------------------------------|-------------------------------------------------- |----------------|
+| ✅ Criação de conta a receber                  | `create_accounts_receivable(data: dict)`          | ✅ Implementado |
+| ✅ Baixa (liquidação) da conta                 | `settle_accounts_receivable(...)`                 | ✅ Implementado |
+| ✅ Atualização de conta                        | `update_accounts_receivable(id: str, data: dict)` | ✅ Implementado |
+| ✅ Cancelamento da conta a receber             | `cancel_accounts_receivable(id: str)`             | ✅ Implementado |
 ---
 
 ## 📌 Resumo Geral

@@ -14,7 +14,7 @@ Atualmente, o sistema suporta dois tipos de cliente ERP:
 - `erp_client_interface.py`: define a interface padrão para qualquer cliente ERP.
 - `erp_client_mock.py`: implementação mock para simular comportamento do ERP sem dependência externa.
 - `erp_client_omie.py`: cliente real que se comunica com a API REST da Omie.
-- `tests/manual/test_erp_omie.py`: script manual para testar criação, atualização e baixa de contas a receber.
+- `tests/manual/test_erp_omie.py`: script manual para testar criação, atualização, baixa e cancelamento de contas a receber.
 
 ---
 
@@ -35,6 +35,10 @@ class ERPClientInterface(ABC):
     def settle_accounts_receivable(self, id: str) -> Dict[str, Any]:
         """Dá baixa (marca como pago) em um lançamento de contas a receber."""
         pass
+
+    def cancel_accounts_receivable(self, id: str) -> Dict[str, Any]:
+        """Cancela (exclui) um lançamento de contas a receber."""
+        pass
 ```
 
 Essa padronização permite alternar facilmente entre implementações reais e simuladas, sem alterar a lógica de negócio.
@@ -47,7 +51,7 @@ O `ERPClientMock` simula um ambiente de ERP com as seguintes características:
 
 - Armazena lançamentos de contas a receber em memória (`dict`).
 - Gera IDs incrementais (`ar-1`, `ar-2`, ...).
-- Permite criar, atualizar e baixar lançamentos.
+- Permite criar, atualizar, baixar e cancelar lançamentos.
 - Valida presença de campos obrigatórios como:
   - `codigo_cliente_fornecedor`
   - `data_vencimento`

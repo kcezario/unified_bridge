@@ -80,6 +80,16 @@ Efetua a **baixa** (liquidação) de um título aberto no contas a receber.
 
 ---
 
+### 4. `cancel_accounts_receivable(id: str) -> dict`
+
+Cancela um lançamento de conta a receber existente no Omie.
+
+- O campo `id` representa o `codigo_lancamento_omie`.
+- Usa o método `ExcluirContaReceber` da API Omie.
+- Remove definitivamente o lançamento da base do Omie.
+
+---
+
 ## 🔄 Fluxo de funcionamento
 
 1. **Autenticação**: todas as chamadas usam `app_key` e `app_secret`, enviados diretamente no corpo do payload.
