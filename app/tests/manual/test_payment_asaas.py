@@ -41,7 +41,12 @@ def test_payment_asaas():
 
     # --- Cancelar pagamento ---
     logger.info("🛑 Cancelando pagamento...")
-    cancelled = client.cancel_payment(payment_id)
+    cancel_data = {
+        "value": created["value"],
+        "dueDate": created["dueDate"],
+        "billingType": created["billingType"],
+    }
+    cancelled = client.cancel_payment(payment_id, data=cancel_data)
     logger.info(f"✅ Pagamento cancelado: {cancelled}")
 
 

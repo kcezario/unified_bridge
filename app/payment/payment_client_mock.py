@@ -48,12 +48,13 @@ class PaymentClientMock(PaymentClientInterface):
             "amount": data["amount"],
             "due_date": data["due_date"],
             "status": "pending",
+            "bank_slip_url": f"https://mock.boleto/{payment_id}.pdf",
         }
 
         logger.info(f"MockPayment: pagamento criado com ID {payment_id}")
         return {"status": "success", "payment_id": payment_id}
 
-    def cancel_payment(self, payment_id: str) -> Dict[str, Any]:
+    def cancel_payment(self, payment_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
         payment = self._payments.get(payment_id)
         if not payment:
             logger.warning(f"MockPayment: pagamento {payment_id} não encontrado.")
@@ -69,7 +70,40 @@ class PaymentClientMock(PaymentClientInterface):
             logger.warning(f"MockPayment: pagamento {payment_id} não encontrado.")
             return {"status": "not_found"}
 
-        logger.info(
-            f"MockPayment: status do pagamento {payment_id} = {payment['status']}"
-        )
+        logger.info(f"MockPayment: status do pagamento {payment_id} = {payment['status']}")
         return {"status": "success", "payment_status": payment["status"]}
+
+    def handle_payment_webhook(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        logger.info("MockPayment: processando webhook de pagamento...")
+
+        payment_id = payload.get("payment_id")
+        event_type = payload.get("event_type")
+
+        if not payment_id or not event_type:
+            logger.error("MockPayment: webhook inválido, campos obrigatórios ausentes.")
+            return {"status": "error", "message": "Campos obrigatórios ausentes."}
+
+        payment = self._payments.get(payment_id)
+        if not payment:
+            logger.warning(f"MockPayment: pagamento {payment_id} não encontrado.")
+            return {"status": "not_found"}
+
+        if event_type == "payment_confirmed":
+            payment["status"] = "paid"
+            logger.info(f"MockPayment: pagamento {payment_id} marcado como pago.")
+        elif event_type == "payment_failed":
+            payment["status"] = "failed"
+            logger.info(f"MockPayment: pagamento {payment_id} marcado como falhou.")
+        else:
+            logger.warning(f"MockPayment: tipo de evento desconhecido: {event_type}")
+            return {"status": "ignored", "message": f"Evento não tratado: {event_type}"}
+
+        return {"status": "success", "payment_id": payment_id, "new_status": payment["status"]}
+
+    def get_payment_link(self, payment_data: Dict[str, Any]) -> str:
+        """
+        Retorna a URL do boleto (simulada).
+        """
+        link = payment_data.get("bank_slip_url")
+        logger.debug(f"MockPayment: link do boleto = {link}")
+        return link or ""

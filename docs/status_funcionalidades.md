@@ -27,7 +27,7 @@ Este documento consolida as funcionalidades requisitadas por stakeholders e o st
 | ✅ Emissão de nota fiscal de serviço (NFSE)      | `issue_invoice(data: dict)`              | ✅ Implementado |
 | ✅ Cancelamento de nota fiscal                   | `cancel_invoice(invoice_id: str)`        | ✅ Implementado |
 | ✅ Consulta de status da nota fiscal             | `get_invoice_status(invoice_id: str)`    | ✅ Implementado |
-| ⚠️ Download da nota em PDF                       | `download_invoice(invoice_id: str)`      | ❌ Não implementado |
+| ✅ Download da nota em PDF                       | `download_invoice(invoice_id: str)`      | ✅ implementado |
 
 🟡 **Ações pendentes**:
 - Adicionar `download_invoice()` na `InvoiceClientInterface`.

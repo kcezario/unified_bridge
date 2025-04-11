@@ -28,6 +28,7 @@ Responsável por:
 - Criar cobranças para clientes previamente cadastrados no Asaas
 - Cancelar cobranças existentes
 - Consultar o status de pagamentos ativos
+- Processar webhooks de pagamento
 - Tratar falhas HTTP e mensagens de erro da API do Asaas
 
 ---
@@ -42,22 +43,20 @@ Cria um novo pagamento (cobrança) no Asaas.
   ```
   POST /payments
   ```
-- Campos esperados no `data`:
+- Campos obrigatórios:
   - `customer`: ID do cliente no Asaas (ex: `cus_000001234567`)
-  - `billingType`: Tipo de cobrança (`PIX`, `BOLETO`, `CREDIT_CARD`, etc.)
-  - `value`: Valor da cobrança (float)
-  - `dueDate`: Data de vencimento (formato `YYYY-MM-DD`)
-  - `description`: Descrição da cobrança
+  - `value`: Valor da cobrança
+  - `dueDate`: Data de vencimento (`YYYY-MM-DD`)
+  - `billingType`: Tipo de cobrança (`PIX`, `BOLETO`, `CREDIT_CARD`)  
+    > *Se não fornecido, assume-se `BOLETO` por padrão.*
+- Campos opcionais: `description`, `externalReference`, `discount`, `interest`, `fine`, `split`, etc.
 
 - Retorna os dados da cobrança criada, incluindo:
-  - `id`: Identificador da cobrança
-  - `status`, `invoiceUrl`, entre outros
-
-- Lança exceções se a criação falhar (ex: dados incorretos, cliente inválido, autenticação ausente).
+  - `id`, `status`, `invoiceUrl`, `bankSlipUrl`, entre outros.
 
 ---
 
-### 2. `cancel_payment(payment_id: str) -> dict`
+### 2. `cancel_payment(payment_id: str, data: dict) -> dict`
 
 Cancela uma cobrança existente, alterando seu status para `"CANCELLED"`.
 
@@ -65,10 +64,10 @@ Cancela uma cobrança existente, alterando seu status para `"CANCELLED"`.
   ```
   PUT /payments/{payment_id}
   ```
-- Payload enviado:
-  ```json
-  { "status": "CANCELLED" }
-  ```
+- Payload obrigatório:
+  - `status`: `"CANCELLED"`
+  - Além disso, os seguintes campos são exigidos para compatibilidade com a API:
+    - `value`, `dueDate`, `billingType`
 
 - Retorna os dados atualizados da cobrança cancelada.
 
@@ -80,9 +79,19 @@ Consulta os dados e o status atual de uma cobrança.
 
 - Endpoint:
   ```
-  GET /payments/{payment_id}
+  GET /payments/{payment_id}/status
   ```
-- Retorna os detalhes completos do pagamento, incluindo status, valor, vencimento, QR Code (se for PIX), e links de boleto.
+- Retorna os detalhes da cobrança, incluindo status atual, QR Code (PIX), links de boleto, etc.
+
+---
+
+### 4. `handle_payment_webhook(payload: dict) -> dict`
+
+Processa um webhook recebido do Asaas e extrai os campos relevantes.
+
+- Espera receber o payload bruto enviado pelo Asaas
+- Os campos relevantes são definidos em `WEBHOOK_PAYMENT_FIELDS`
+- Retorna um `dict` com os dados planos extraídos
 
 ---
 
@@ -91,9 +100,10 @@ Consulta os dados e o status atual de uma cobrança.
 1. O sistema envia uma requisição autenticada com o token da API (`access_token`) no cabeçalho.
 2. Os dados da cobrança são enviados no corpo da requisição.
 3. O Asaas processa a cobrança e retorna os dados completos da transação.
-4. A aplicação pode posteriormente:
+4. A aplicação pode:
    - Consultar o status da cobrança
-   - Cancelar a cobrança, se necessário
+   - Cancelar a cobrança
+   - Processar o webhook ao receber notificações assíncronas do Asaas
 
 ---
 
@@ -101,9 +111,10 @@ Consulta os dados e o status atual de uma cobrança.
 
 A classe `PaymentClientAsaas` realiza o tratamento completo de falhas:
 
-- Verifica presença da variável `ASAAS_API_KEY` no ambiente
-- Verifica status da resposta HTTP (`200` ou `201`)
-- Em caso de erro, registra a falha no logger e lança uma exceção com os detalhes do erro retornado pela API
+- Verifica presença das variáveis de ambiente obrigatórias
+- Lança exceções para status HTTP diferentes de 200/201
+- Valida os dados enviados com base no contexto (`create`, `update`)
+- Registra todos os erros no log
 
 ---
 
@@ -115,7 +126,7 @@ O script `tests/manual/test_payment_asaas.py` permite testar:
 - Consulta imediata do status
 - Cancelamento da cobrança
 
-O log completo da operação é salvo conforme configuração do `LOG_DIR` e `LOG_LEVEL`.
+> O log completo da operação é salvo conforme configuração do `LOG_DIR` e `LOG_LEVEL`.
 
 ---
 
