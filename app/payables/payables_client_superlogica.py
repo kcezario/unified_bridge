@@ -3,6 +3,7 @@ import requests
 from typing import Dict, Any
 
 from app.payables.payables_client_interface import PayablesClientInterface
+from app.payables.utils.validators import validate_create_payable_payload
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -26,15 +27,27 @@ class SuperlogicaPayablesClient(PayablesClientInterface):
 
     def create_payable(self, data: Dict[str, Any]) -> Dict[str, Any]:
         logger.info("Superlógica: criando contas a pagar...")
+        validate_create_payable_payload(data)
 
         url = f"{self.base_url}/v2/condor/MovimentacoesDiretas/"
+        logger.debug(f"POST {url}")
+        logger.debug(f"Payload: {data}")
+
         response = requests.post(url, headers=self._headers(), data=data)
 
         if response.status_code != 200:
             logger.error(f"Erro ao criar contas a pagar: {response.status_code} - {response.text}")
             response.raise_for_status()
 
-        return response.json()
+        try:
+            result = response.json()
+        except ValueError:
+            logger.warning("Resposta não está em JSON. Retornando texto puro.")
+            result = {"raw_response": response.text}
+
+        logger.info("Superlógica: contas a pagar criada com sucesso.")
+        return result
+
 
     def settle_payable(self, payable_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
         logger.info(f"Superlógica: liquidando contas a pagar ID {payable_id}...")
