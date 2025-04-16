@@ -130,3 +130,42 @@ class PaymentClientAsaas(PaymentClientInterface):
         else:
             logger.warning("Asaas: link do boleto não disponível no response.")
         return link or ""
+    
+    def create_customer(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Cria um novo cliente na plataforma Asaas.
+
+        Args:
+            data (dict): Dados obrigatórios e opcionais do cliente. Campos mínimos:
+                - name (str): Nome ou razão social
+                - cpfCnpj (str): CPF ou CNPJ (somente números)
+            
+            Campos adicionais recomendados:
+                - email, phone, mobilePhone, postalCode, addressNumber
+                - address, complement, province, externalReference, etc.
+
+        Returns:
+            dict: Resposta completa da API do Asaas com ID do cliente criado.
+        """
+        logger.info("Asaas: criando cliente...")
+
+        required_fields = ["name", "cpfCnpj"]
+        for field in required_fields:
+            if not data.get(field):
+                logger.error(f"Asaas: campo obrigatório '{field}' ausente.")
+                raise ValueError(f"O campo obrigatório '{field}' está ausente.")
+
+        url = f"{self.base_url}/customers"
+        logger.debug(f"POST {url}")
+        logger.debug(f"Payload: {json.dumps(data, indent=2, ensure_ascii=False)}")
+
+        response = requests.post(url, headers=self._headers(), json=data)
+
+        if response.status_code not in (200, 201):
+            logger.error(f"Asaas: erro ao criar cliente: {response.status_code} - {response.text}")
+            response.raise_for_status()
+
+        result = response.json()
+        logger.info(f"Asaas: cliente criado com sucesso: {result.get('id')}")
+        return result
+

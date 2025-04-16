@@ -27,3 +27,8 @@ class PaymentClientInterface(ABC):
     def get_payment_link(self, payment_data: Dict[str, Any]) -> str:
         """Extrai e retorna o link do boleto (caso exista) a partir dos dados da cobrança."""
         pass
+
+    @abstractmethod
+    def create_customer(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Cria um novo cliente no provedor de pagamento (ex: Asaas)."""
+        pass

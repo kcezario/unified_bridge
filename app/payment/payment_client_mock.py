@@ -107,3 +107,37 @@ class PaymentClientMock(PaymentClientInterface):
         link = payment_data.get("bank_slip_url")
         logger.debug(f"MockPayment: link do boleto = {link}")
         return link or ""
+
+    def create_customer(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Cria um novo cliente simulado no sistema de pagamentos (mock).
+
+        Args:
+            data (dict): Dados básicos do cliente. Campos obrigatórios:
+                - name (str): Nome ou razão social
+                - email (str): Email do cliente
+                - cpfCnpj (str): CPF ou CNPJ (formato numérico)
+
+        Returns:
+            dict: Dados simulados do cliente criado
+        """
+        logger.info("MockPayment: criando novo cliente...")
+
+        required_fields = ["name", "email", "cpfCnpj"]
+        for field in required_fields:
+            if not data.get(field):
+                logger.error(f"MockPayment: campo obrigatório '{field}' ausente.")
+                raise ValueError(f"O campo obrigatório '{field}' está ausente.")
+
+        customer_id = f"cus-mock-{len(self._payments) + 1}"  # Reutiliza contador de pagamentos
+
+        logger.info(f"MockPayment: cliente criado com ID {customer_id}")
+        return {
+            "status": "success",
+            "customer_id": customer_id,
+            "data": {
+                "name": data["name"],
+                "email": data["email"],
+                "cpfCnpj": data["cpfCnpj"]
+            }
+        }
